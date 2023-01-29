@@ -1,61 +1,59 @@
+import DifferentConstructions.Completions.CompletionArg
+
 object DifferentConstructions:
 
-extension (x: String)
-  def + (y: String): Option[Int] = {
-    val a: String = x + y
-    a.toInt
+  object Different:
+     extension (x: String)
+       def + (y: String): Int = {
+       val a: String = x + y
+     a.toInt
   }
 
-end DifferentConstructions
+  end Different
 
-object Completions:
+  object Completions:
 
   // The argument "magnet" type
-  enum CompletionArg:
-    case ShowItIsString()
-    case ShowItIsInt()
-    case ShowItIsFloat(s: Float)
+    enum CompletionArg:
+      case ShowItIsString(s: String)
+      case ShowItIsInt(s: Int)
+      case ShowItIsFloat(s: Float)
 
-  object CompletionArg:
+    object CompletionArg:
 
-    // conversions defining the possible arguments to pass to `complete`
-    // these always come with CompletionArg
-    // They can be invoked explicitly, e.g.
-    //
-    //   CompletionArg.fromStatusCode(statusCode)
+     given fromString : Conversion[String, CompletionArg] = ShowItIsString(_)
+     given fromInt : Conversion[Int, CompletionArg] = ShowItIsInt(_)
+     given fromFloat: Conversion[Float, CompletionArg] = ShowItIsFloat(_)
+    end CompletionArg
+    import CompletionArg.*
 
-    given fromString : Conversion[String, CompletionArg] = ShowItIsString()
-    given fromInt : Conversion[Int, CompletionArg] = ShowItIsInt()
-    given fromFloat: Conversion[Float, CompletionArg] = ShowItIsFloat(_)
-  end CompletionArg
-  import CompletionArg.*
+    def complete[T](arg: CompletionArg) = arg match
+      case ShowItIsString(_) => arg.toString
+      case ShowItIsInt(_) => arg.toString.toInt
+      case ShowItIsFloat(_) => arg.toString.toFloat
 
-  def complete[T](arg: CompletionArg) = arg match
-    case ShowItIsString() => arg.toString
-    case ShowItIsInt() => arg.toString.toInt
-    case ShowItIsFloat(_) => arg.toString.toFloat
+  end Completions
 
-end Completions
+  object MyMath:
 
-object MyMath:
+    opaque type Logarithm = Double
 
-  opaque type Logarithm = Double
-
-  object Logarithm:
+    object Logarithm:
 
     // These are the two ways to lift to the Logarithm type
 
-    def apply(d: Double): Logarithm = math.log(d)
+      def apply(d: Double): Logarithm = math.log(d)
 
-    def safe(d: Double): Option[Logarithm] =
-      if d > 0.0 then Some(math.log(d)) else None
+      def safe(d: Double): Option[Logarithm] =
+        if d > 0.0 then Some(math.log(d)) else None
 
-  end Logarithm
+    end Logarithm
 
   // Extension methods define opaque types' public APIs
-  extension (x: Logarithm)
-    def toDouble: Double = math.exp(x)
-    def + (y: Logarithm): Logarithm = Logarithm(math.exp(x) + math.exp(y))
-    def * (y: Logarithm): Logarithm = x + y
+    extension (x: Logarithm)
+      def toDouble: Double = math.exp(x)
+      def + (y: Logarithm): Logarithm = Logarithm(math.exp(x) + math.exp(y))
+      def * (y: Logarithm): Logarithm = x + y
 
-end MyMath
+  end MyMath
+end DifferentConstructions
